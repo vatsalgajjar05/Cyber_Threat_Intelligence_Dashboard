@@ -120,83 +120,100 @@ using open-source technologies.
 **```**
 
 
-
-**---**
-
-
 ## ⚙️ **Installation & Setup**
 
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/your-username/Cyber_Threat_Intelligence_Dashboard.git
 cd Cyber_Threat_Intelligence_Dashboard
+````
 
-2️⃣ Create Virtual Environment (Recommended)
+---
+
+### 2️⃣ Create Virtual Environment *(Recommended)*
+
+```bash
 python -m venv venv
 source venv/bin/activate   # Linux / Mac
 venv\Scripts\activate      # Windows
+```
 
-3️⃣ Install Dependencies
+---
+
+### 3️⃣ Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-4️⃣ Configure API Keys
+---
 
-Add your API keys in .env file or config.py:
+### 4️⃣ Configure API Keys
 
+Add your API keys in `.env` file or `config.py`:
+
+```env
 VIRUSTOTAL_API_KEY=your_key_here
 ABUSEIPDB_API_KEY=your_key_here
+```
 
-5️⃣ Run the CTI Dashboard
+---
+
+### 5️⃣ Run the CTI Dashboard
+
+```bash
 python cti_tool/app.py
+```
 
-6️⃣ (Optional) Run Admin Panel
+---
+
+### 6️⃣ (Optional) Run Admin Panel
+
+```bash
 python admin_panel/app.py
+```
 
-🚀 How the System Works
+---
 
-User submits an IP address for analysis
+## 🚀 **How the System Works**
 
-Backend queries VirusTotal and AbuseIPDB APIs
+1. User submits an IP address for analysis
+2. Backend queries **VirusTotal** and **AbuseIPDB** APIs
+3. Threat scores are calculated using a CTI heuristic
+4. IOC data is stored in SQLite database
+5. Dashboard displays:
 
-Threat scores are calculated using a CTI heuristic
+   * Threat counts
+   * Activity trends
+   * Global threat heatmap
+6. Admin panel allows managing, editing, and deleting IOCs
 
-IOC data is stored in SQLite database
+---
 
-Dashboard displays:
+## 📊 **Visualizations Included**
 
-Threat counts
+* 📈 **Threat Activity Over Time (Line Chart)**
+* 🌍 **Global Threat Heatmap**
+* 📋 **Recent IOC Table with Severity Badges**
 
-Activity trends
+---
 
-Global threat heatmap
+## 🔐 **Security & Limitations**
 
-Admin panel allows managing, editing, and deleting IOCs
+* Uses **free-tier APIs**, hence subject to rate limits
+* No advanced authentication *(can be enhanced)*
+* Designed for **educational & internship purposes**
 
-📊 Visualizations Included
+---
 
-📈 Threat Activity Over Time (Line Chart)
+## 🏫 **Internship Acknowledgment**
 
-🌍 Global Threat Heatmap
+This project was developed during an internship at **Elevate Labs**, focusing on:
 
-📋 Recent IOC Table with Severity Badges
+* Cyber Threat Intelligence
+* API Integration
+* Security Analytics
+* Dashboard Development
 
-🔐 Security & Limitations
 
-Uses free-tier APIs, hence subject to rate limits
-
-No advanced authentication (can be enhanced)
-
-Designed for educational & internship purposes
-
-🏫 Internship Acknowledgment
-
-This project was developed during an internship at Elevate Labs, focusing on:
-
-Cyber Threat Intelligence
-
-API Integration
-
-Security Analytics
-
-Dashboard Development
 
