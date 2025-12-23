@@ -69,3 +69,107 @@ using open-source technologies.
 
 ## 📂 **Project Structure**
 
+Cyber-Threat-Intelligence-Dashboard/
+│
+├── admin_panel/
+│ ├── app.py
+│ ├── auth.py
+│ ├── config.py
+│ └── templates/
+│
+├── cti_tool/
+│ ├── app.py
+│ ├── config.py
+│ ├── services/
+│ │ ├── virustotal.py
+│ │ └── abuseipdb.py
+│ ├── static/
+│ └── templates/
+│
+├── database/
+│ └── cti.db
+│
+├── assets/
+├── requirements.txt
+├── README.md
+└── LICENSE
+
+
+---
+
+## ⚙️ **Installation & Setup**
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/your-username/Cyber_Threat_Intelligence_Dashboard.git
+cd Cyber_Threat_Intelligence_Dashboard
+
+2️⃣ Create Virtual Environment (Recommended)
+python -m venv venv
+source venv/bin/activate   # Linux / Mac
+venv\Scripts\activate      # Windows
+
+3️⃣ Install Dependencies
+pip install -r requirements.txt
+
+4️⃣ Configure API Keys
+
+Add your API keys in .env file or config.py:
+
+VIRUSTOTAL_API_KEY=your_key_here
+ABUSEIPDB_API_KEY=your_key_here
+
+5️⃣ Run the CTI Dashboard
+python cti_tool/app.py
+
+6️⃣ (Optional) Run Admin Panel
+python admin_panel/app.py
+
+🚀 How the System Works
+
+User submits an IP address for analysis
+
+Backend queries VirusTotal and AbuseIPDB APIs
+
+Threat scores are calculated using a CTI heuristic
+
+IOC data is stored in SQLite database
+
+Dashboard displays:
+
+Threat counts
+
+Activity trends
+
+Global threat heatmap
+
+Admin panel allows managing, editing, and deleting IOCs
+
+📊 Visualizations Included
+
+📈 Threat Activity Over Time (Line Chart)
+
+🌍 Global Threat Heatmap
+
+📋 Recent IOC Table with Severity Badges
+
+🔐 Security & Limitations
+
+Uses free-tier APIs, hence subject to rate limits
+
+No advanced authentication (can be enhanced)
+
+Designed for educational & internship purposes
+
+🏫 Internship Acknowledgment
+
+This project was developed during an internship at Elevate Labs, focusing on:
+
+Cyber Threat Intelligence
+
+API Integration
+
+Security Analytics
+
+Dashboard Development
+
