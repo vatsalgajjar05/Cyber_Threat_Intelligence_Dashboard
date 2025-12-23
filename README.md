@@ -69,33 +69,60 @@ using open-source technologies.
 
 ## 📂 **Project Structure**
 
-Cyber-Threat-Intelligence-Dashboard/
-│
-├── admin_panel/
-│ ├── app.py
-│ ├── auth.py
-│ ├── config.py
-│ └── templates/
-│
-├── cti_tool/
-│ ├── app.py
-│ ├── config.py
-│ ├── services/
-│ │ ├── virustotal.py
-│ │ └── abuseipdb.py
-│ ├── static/
-│ └── templates/
-│
-├── database/
-│ └── cti.db
-│
-├── assets/
-├── requirements.txt
-├── README.md
-└── LICENSE
+**```**
+
+**Cyber-Threat-Intelligence-Dashboard/**
+
+**│**
+
+**├── admin\_panel/**
+
+**│   ├── app.py**
+
+**│   ├── auth.py**
+
+**│   ├── config.py**
+
+**│   └── templates/**
+
+**│**
+
+**├── cti\_tool/**
+
+**│   ├── app.py**
+
+**│   ├── config.py**
+
+**│   ├── services/**
+
+**│   │   ├── virustotal.py**
+
+**│   │   └── abuseipdb.py**
+
+**│   ├── static/**
+
+**│   └── templates/**
+
+**│**
+
+**├── database/**
+
+**│   └── cti.db**
+
+**│**
+
+**├── requirements.txt**
+
+**├── README.md**
+  
+**└── LICENSE**
+
+**```**
 
 
----
+
+**---**
+
 
 ## ⚙️ **Installation & Setup**
 
