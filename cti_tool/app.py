@@ -192,7 +192,7 @@ def create_app():
     @app.route("/api/tag", methods=["POST"])
     def update_tag():
         data = request.json
-        conn = sqlite3.connect("cti.db")
+        conn = sqlite3.connect("DB_PATH")
         cur = conn.cursor()
         cur.execute("UPDATE iocs SET tags=? WHERE id=?", (data["tags"], data["id"]))
         conn.commit()
