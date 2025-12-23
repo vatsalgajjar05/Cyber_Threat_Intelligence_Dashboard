@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Stored IOCs</h2>
+
+<table class="ioc-table">
+    <thead>
+        <tr>
+            <th>Sr No</th>
+            <th>Value</th>
+            <th>Type</th>
+            <th>Severity</th>
+            <th>Tags</th>
+            <th>Source</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for i in iocs %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ i.value }}</td>
+            <td>{{ i.type | upper }}</td>
+            <td class="level-{{ i.threat_level | lower }}">
+                {{ i.threat_level }}
+            </td>
+            <td>{{ i.tags if i.tags else "-" }}</td>
+            <td>{{ i.source }}</td>
+            <td>
+                <a class="btn small" href="/admin/ioc/{{ i.id }}">Edit</a>
+
+                <!-- ✅ NO JINJA IN JS -->
+                <button
+                    type="button"
+                    class="btn small danger delete-btn"
+                    data-id="{{ i.id }}">
+                    Delete
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+document.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+        const id = this.dataset.id;
+
+        if (!confirm("Are you sure you want to delete this IOC?")) return;
+
+        fetch(`/admin/api/delete/${id}`, {
+            method: "DELETE"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                location.reload();
+            } else {
+                alert("Delete failed");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Server error");
+        });
+    });
+});
+</script>
+
+{% endblock %}

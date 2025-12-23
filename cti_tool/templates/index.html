@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Threat Intelligence Dashboard</h2>
+<head><link rel="icon" href="data:,"></head>
+
+
+<!-- ANALYTICS CARDS -->
+<!-- </div>
+<div class="grid">
+<div class="card" style="grid-column:span 3">
+<h3>Total IOCs</h3>
+<div class="value">{{ count }}</div>
+</div>
+<div class="card" style="grid-column:span 3">
+<h3>High Threat</h3>
+<div class="value" style="color:#ef4444">{{ high }}</div>
+</div>
+<div class="card" style="grid-column:span 3">
+<h3>Medium Threat</h3>
+<div class="value" style="color:#facc15">{{ medium }}</div>
+</div>
+<div class="card" style="grid-column:span 3">
+<h3>Low Threat</h3>
+<div class="value" style="color:#22c55e">{{ low }}</div>
+</div> -->
+
+<div class="cards">
+<div class="card"><h3>Total IOCs</h3><div class="value">{{ count }}</div></div>
+<div class="card"><h3>High Threat</h3><div class="value high">{{ high }}</div></div>
+<div class="card"><h3>Medium Threat</h3><div class="value medium">{{ medium }}</div></div>
+<div class="card"><h3>Low Threat</h3><div class="value low">{{ low }}</div></div>
+</div>
+
+
+<h2 style="margin-top:36px">Recent Indicators of Compromise</h2>
+
+<!-- TABLE OF IOCs -->
+<h2 style="margin-top:36px">Stored IOCs</h2>
+
+<table class="ioc-table modern">
+    <thead>
+        <tr>
+            <th>Sr No.</th>
+            <th>Value</th>
+            <th>Type</th>
+            <th>Severity</th>
+            <th>Tags</th>
+            <th>Source</th>
+            <th>First Seen</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for i in iocs %}
+        <tr>
+            <!-- SERIAL NUMBER -->
+            <td class="muted">{{ loop.index }}</td>
+
+            <td class="mono">{{ i.value }}</td>
+            <td>{{ i.type | upper }}</td>
+
+            <td>
+                <span class="badge {{ i.threat_level | lower }}">
+                    {{ i.threat_level }}
+                </span>
+            </td>
+
+            <td>{{ i.tags if i.tags else "-" }}</td>
+            <td class="muted">{{ i.source }}</td>
+            <td class="muted small">{{ i.first_seen }}</td>
+
+            <td>
+                <!-- IMPORTANT: Backend ID still used -->
+                <button class="btn small ghost" onclick="openTagModal('{{ i.id }}')">
+                    Tag
+                </button>
+                <a href="/ioc/{{ i.id }}" class="btn small primary">
+                    View
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+<!-- TAG MODAL -->
+<div id="tagModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit Tags</h3>
+        <input id="tagInput" placeholder="comma separated tags">
+
+        <div class="modal-actions">
+            <button class="btn" onclick="saveTags()">Save</button>
+            <button class="btn danger" onclick="closeTagModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- TREND CHART -->
+<div class="chart-area">
+    <h3>Threat Activity Over Time</h3>
+    <canvas id="trendChart"></canvas>
+</div>
+
+
+<!-- HEATMAP -->
+<div class="chart-area">
+    <h3>Global Threat Heatmap</h3>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+    <div id="heatmap"
+         style="
+            height: 360px;
+            width: 100%;
+            border-radius: 16px;
+            margin-top: 16px;
+            overflow: hidden;
+         ">
+    </div>
+</div>
+
+<!-- ================= SAFE DATA INJECTION ================= -->
+<script id="ip-data" type="application/json">
+{{ ip_list | tojson | safe }}
+</script>
+
+<script>
+/* ============================
+   TAGGING
+=============================*/
+let currentIOC = null;
+
+function openTagModal(id) {
+    currentIOC = id;
+    document.getElementById("tagModal").style.display = "block";
+}
+
+function closeTagModal() {
+    document.getElementById("tagModal").style.display = "none";
+}
+
+async function saveTags() {
+    let tags = document.getElementById("tagInput").value;
+
+    await fetch("/api/tag", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id: currentIOC, tags})
+    });
+
+    closeTagModal();
+    location.reload();
+}
+
+
+/* ============================
+   TREND CHART
+=============================*/
+async function loadTrends() {
+    const res = await fetch("/api/trends");
+    const data = await res.json();
+
+    new Chart(document.getElementById("trendChart"), {
+        type: "line",
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: "IOC Activity",
+                data: data.values,
+                borderColor: "cyan",
+                backgroundColor: "rgba(0,255,255,0.3)"
+            }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+}
+loadTrends();
+
+
+/* ============================
+   HEATMAP (LINTER-SAFE)
+   Read JSON from #ip-data textContent to avoid Jinja inside JS source
+=============================*/
+function getIpListFromTemplate() {
+    const el = document.getElementById("ip-data");
+    if (!el) return [];
+    try {
+        return JSON.parse(el.textContent.trim());
+    } catch (e) {
+        console.error("IP JSON parse error", e);
+        return [];
+    }
+}
+
+const ipList = [...new Set(getIpListFromTemplate())];
+console.log("Heatmap IPs:", ipList);
+
+async function loadHeatmap() {
+    const map = L.map("heatmap").setView([20, 0], 2);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 6,
+        attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    for (const ip of ipList) {
+        try {
+            const r = await fetch(`/api/geo/${ip}`);
+            if (!r.ok) continue;
+
+            const loc = await r.json();
+            if (!loc.lat || !loc.lon) continue;
+
+            L.circleMarker(
+                [loc.lat, loc.lon],
+                {
+                    radius: 10,
+                    color: "#ef4444",
+                    fillColor: "#ef4444",
+                    fillOpacity: 0.8
+                }
+            )
+            .bindPopup(`<b>${ip}</b><br>${loc.city || ""}, ${loc.country || ""}`)
+            .addTo(map);
+
+        } catch (e) {
+            console.warn("Geo failed for", ip);
+        }
+    }
+}
+
+loadHeatmap();
+
+</script>
+
+{% endblock %}

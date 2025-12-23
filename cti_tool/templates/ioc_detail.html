@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>IOC Details</h2>
+
+<div class="ioc-header" style="display:flex;align-items:center;gap:18px;">
+    <div>
+        <h3 style="margin:0;">
+            {{ ioc.value }} <small style="color:#9aa3ad">({{ ioc.type }})</small>
+        </h3>
+        <div style="margin-top:6px;">
+            <a class="btn" href="/ioc/{{ ioc.id }}/pdf">Download PDF</a>
+            <button class="btn" id="editTagsBtn">Edit Tags</button>
+            <a class="btn" href="/" style="margin-left:8px;">Back</a>
+        </div>
+    </div>
+
+    <!-- Flag (if available) -->
+    <div style="margin-left:auto;">
+        {% if geo.country_code %}
+            <img src="https://flagsapi.com/{{ geo.country_code }}/flat/64.png" alt="{{ geo.country_name or '' }}" style="border-radius:6px;">
+        {% endif %}
+    </div>
+</div>
+
+<!-- SUMMARY & GEO CARDS -->
+<div style="display:grid;grid-template-columns: 1fr 1fr; gap:18px; margin-top:18px;">
+
+    <div class="summary-card level-{{ ioc.threat_level | lower }}">
+        <h4 style="margin:0 0 8px 0">Threat Summary</h4>
+        <p style="margin:4px 0"><strong>Threat Level:</strong> {{ ioc.threat_level or 'Unknown' }}</p>
+        <p style="margin:4px 0"><strong>Source:</strong> {{ ioc.source or 'Unknown' }}</p>
+        <p style="margin:4px 0"><strong>First Seen:</strong> {{ ioc.first_seen or 'Not Available' }}</p>
+        <p style="margin:4px 0"><strong>Last Seen:</strong> {{ ioc.last_seen or 'Not Available' }}</p>
+        <p style="margin:4px 0"><strong>Tags:</strong> <span id="displayTags">{{ ioc.tags or '—' }}</span></p>
+    </div>
+
+    <div class="geo-card">
+        <h4 style="margin:0 0 8px 0">Geo Information</h4>
+        <p style="margin:6px 0"><strong>Country:</strong> {{ geo.country_name or geo.country or 'Not Available' }}</p>
+        <p style="margin:6px 0"><strong>Region:</strong> {{ geo.region or geo.regionName or 'Not Available' }}</p>
+        <p style="margin:6px 0"><strong>City:</strong> {{ geo.city or 'Not Available' }}</p>
+        <p style="margin:6px 0"><strong>ISP:</strong> {{ geo.org or geo.isp or 'Not Available' }}</p>
+        <p style="margin:6px 0"><strong>IP:</strong> {{ ioc.value }}</p>
+    </div>
+
+</div>
+
+<!-- TAG MODAL (reusable) -->
+<div id="tagModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>Edit Tags</h3>
+        <input id="detailTagInput" placeholder="comma separated tags" style="width:100%;padding:8px;margin-top:8px;">
+        <div style="margin-top:12px;text-align:right;">
+            <button class="btn" id="saveTagsDetailBtn">Save</button>
+            <button class="btn danger" id="closeTagModalBtn">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Timeline chart -->
+<div class="chart-area" style="margin-top:18px;">
+    <h3>Historical Events / Lookups</h3>
+    <canvas id="eventChart" style="max-width:100%;"></canvas>
+</div>
+
+<!-- include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Inject events and tags safely as JSON in non-JS script blocks -->
+<script id="events-data" type="application/json">
+{{ events | tojson | safe }}
+</script>
+
+<script id="prefill-tags" type="application/json">
+{{ ioc.tags | tojson | safe }}
+</script>
+
+<script>
+/* ===== Helpers to read injected JSON (lint-safe) ===== */
+function jsonFromEl(id, fallback) {
+    const el = document.getElementById(id);
+    if (!el) return fallback;
+    try {
+        const raw = el.textContent || el.innerText || "";
+        if (!raw.trim()) return fallback;
+        return JSON.parse(raw);
+    } catch (e) {
+        console.warn("Failed to parse JSON from", id, e);
+        return fallback;
+    }
+}
+
+/* ===== Tag modal handlers (detail page) ===== */
+let currentDetailIOC = "{{ ioc.id }}";
+
+function openTagModal() {
+    // get prefill tags safely
+    const tags = jsonFromEl("prefill-tags", "") || "";
+    document.getElementById("detailTagInput").value = tags;
+    document.getElementById("tagModal").style.display = "block";
+}
+
+function closeTagModalDetail() {
+    document.getElementById("tagModal").style.display = "none";
+}
+
+async function saveTagsDetail() {
+    const tags = document.getElementById("detailTagInput").value;
+    try {
+        const res = await fetch("/api/tag", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({id: currentDetailIOC, tags})
+        });
+        if (res.ok) {
+            // update displayed tags inline and reload prefill JSON
+            document.getElementById("displayTags").innerText = tags || "—";
+            // update the prefill json element so subsequent opens show updated tags
+            document.getElementById("prefill-tags").textContent = JSON.stringify(tags);
+        } else {
+            console.warn("Tag save returned non-ok:", res.status);
+        }
+    } catch (e) {
+        console.error("Failed to save tags:", e);
+    }
+    closeTagModalDetail();
+}
+
+/* wire buttons after DOM loaded */
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("editTagsBtn").addEventListener("click", openTagModal);
+    document.getElementById("closeTagModalBtn").addEventListener("click", closeTagModalDetail);
+    document.getElementById("saveTagsDetailBtn").addEventListener("click", saveTagsDetail);
+});
+
+/* ===== Build timeline chart from events JSON ===== */
+const events = jsonFromEl("events-data", []);
+
+const days = {};
+for (const e of events) {
+    const ts = e.timestamp || e["timestamp"] || "";
+    const day = (ts.split("T")[0] || ts.split(" ")[0] || "").trim();
+    if (!day) continue;
+    days[day] = (days[day] || 0) + 1;
+}
+
+const labels = Object.keys(days).sort();
+const values = labels.map(l => days[l]);
+
+// render chart if canvas exists
+(function renderChart(){
+    const canvas = document.getElementById("eventChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Events",
+                data: values,
+                backgroundColor: "rgba(0,150,250,0.4)",
+                borderColor: "rgba(0,150,250,1)",
+                borderWidth: 1
+            }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+})();
+</script>
+
+<style>
+/* small local styles to make the page consistent with dark.css */
+.summary-card { padding:14px; border-radius:10px; background:#16202b; color:#e6edf3; }
+.geo-card { padding:14px; border-radius:10px; background:#0f1720; color:#cfe6ff; }
+.level-high { background:#3a0000; }
+.level-medium { background:#3a2a00; }
+.level-low { background:#003318; }
+
+/* modal styles */
+.modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:50; }
+.modal-content { background:#0b1220; padding:18px; border-radius:10px; width:360px; color:#e6eef8; }
+.modal-content input { background:#0f1720; border:1px solid #233040; color:#e6eef8; padding:8px; border-radius:6px; }
+</style>
+
+{% endblock %}

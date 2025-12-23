@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CTI Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Admin Dark Theme -->
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #0f172a;
+            color: #e5e7eb;
+        }
+
+        /* Top Navbar */
+        .navbar {
+            height: 60px;
+            background: #020617;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #22c55e;
+        }
+
+        .navbar a {
+            color: #e5e7eb;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+        }
+
+        .navbar a:hover {
+            color: #22c55e;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: #020617;
+            padding-top: 20px;
+            border-right: 1px solid #1e293b;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 12px 20px;
+            color: #cbd5f5;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .sidebar a:hover {
+            background: #1e293b;
+            color: #22c55e;
+        }
+
+        /* Main content */
+        .content {
+            flex: 1;
+            padding: 25px;
+        }
+
+        h1, h2, h3 {
+            color: #f8fafc;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #020617;
+            border: 1px solid #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .card p {
+            font-size: 26px;
+            margin: 10px 0 0;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #22c55e;
+            color: #020617;
+            padding: 8px 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #16a34a;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #020617;
+            border: 1px solid #1e293b;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #1e293b;
+            font-size: 14px;
+        }
+
+        th {
+            background: #020617;
+            color: #94a3b8;
+        }
+
+        tr:hover {
+            background: #020617;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- Top bar -->
+<div class="navbar">
+    <h2>CTI Admin Panel</h2>
+    <div>
+        <!-- <a href="/admin">Dashboard</a>
+        <a href="/admin/iocs">IOCs</a> -->
+        <a href="/admin/logout">Logout</a>
+    </div>
+</div>
+
+<!-- Main layout -->
+<div class="layout">
+    <div class="sidebar">
+        <a href="/admin"><b>📊 Overview</b></a>
+        <a href="/admin/iocs"><b>📌 Manage IOCs</b></a>
+    </div>
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
+
+</body>
+</html>

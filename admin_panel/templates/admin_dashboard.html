@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+
+<div class="card-grid">
+    <div class="card">
+        <h3>Total IOCs</h3>
+        <p>{{ total }}</p>
+    </div>
+    <div class="card">
+        <h3>High Threat</h3>
+        <p style="color:#ef4444">{{ high }}</p>
+    </div>
+    <div class="card">
+        <h3>Medium Threat</h3>
+        <p style="color:#facc15">{{ medium }}</p>
+    </div>
+    <div class="card">
+        <h3>Low Threat</h3>
+        <p style="color:#22c55e">{{ low }}</p>
+    </div>
+</div>
+{% endblock %}

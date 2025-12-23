@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>IP Threat Lookup</h2>
+
+<div class="lookup-box">
+    <input type="text" id="ipInput" placeholder="Enter IP address (e.g., 8.8.8.8)">
+    <button class="btn" onclick="lookup()">Search</button>
+</div>
+
+<div id="resultArea" class="result-area" style="display:none;">
+    <h3>Threat Report</h3>
+
+    <div id="threatLevel" class="threat-level-box">Loading...</div>
+
+    <div class="cards">
+        <div class="card">
+            <div class="card-title">VT Malicious</div>
+            <div class="card-value" id="vtMal"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">VT Suspicious</div>
+            <div class="card-value" id="vtSus"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Abuse Confidence Score</div>
+            <div class="card-value" id="abScore"></div>
+        </div>
+    </div>
+
+    <div class="chart-area">
+        <canvas id="vtChart"></canvas>
+    </div>
+
+</div>
+
+<script>
+async function lookup(){
+    let ip = document.getElementById("ipInput").value.trim();
+    if(!ip){ alert("Enter IP"); return; }
+
+    let res = await fetch("/api/lookup", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({value: ip})
+    });
+
+    let data = await res.json();
+    console.log(data);
+
+    if(data.error){
+        alert(data.error);
+        return;
+    }
+
+    document.getElementById("resultArea").style.display = "block";
+
+    let vt = data.virustotal;
+    let ab = data.abuseipdb;
+
+    document.getElementById("vtMal").innerText = vt.malicious ?? 0;
+    document.getElementById("vtSus").innerText = vt.suspicious ?? 0;
+    document.getElementById("abScore").innerText = ab.abuse_score ?? 0;
+
+    let level = data.threat_level || data.summary?.threat_level || "Unknown";
+    let box = document.getElementById("threatLevel");
+
+    box.innerText = "Threat Level: " + level;
+
+    if(level === "High") box.style.background = "#b30000";
+    else if(level === "Medium") box.style.background = "#b38f00";
+    else box.style.background = "#006600";
+
+    // Chart
+    const ctx = document.getElementById('vtChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Malicious', 'Suspicious', 'Abuse Score'],
+            datasets: [{
+                label: 'Values',
+                data: [
+                    vt.malicious ?? 0,
+                    vt.suspicious ?? 0,
+                    ab.abuse_score ?? 0
+                ],
+                backgroundColor: ['#ff4d4d','#ffcc00','#33cc33']
+            }]
+        },
+        options: {responsive:true}
+    });
+}
+</script>
+
+{% endblock %}

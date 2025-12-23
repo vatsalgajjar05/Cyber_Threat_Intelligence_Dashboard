@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Edit IOC</h2>
+
+<form method="POST">
+    <label>Threat Level</label>
+    <select name="threat_level">
+        <option {{ 'selected' if ioc.threat_level=='High' }}>High</option>
+        <option {{ 'selected' if ioc.threat_level=='Medium' }}>Medium</option>
+        <option {{ 'selected' if ioc.threat_level=='Low' }}>Low</option>
+    </select>
+
+    <label>Tags</label>
+    <input name="tags" value="{{ ioc.tags }}">
+
+    <button class="btn">Save</button>
+</form>
+
+<a class="btn" href="/admin/iocs">Back</a>
+
+{% endblock %}

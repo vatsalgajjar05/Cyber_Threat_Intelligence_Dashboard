@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber Threat Intelligence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- DARK THEME -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark.css') }}">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div><b><h2><a href="/" class="btt">CTI Dashboard</a></h2></b></div>
+    <nav>
+        <a href="/lookup" class="btn">New Lookup</a>
+        <a href="/export/csv" class="btn secondary" style="margin-left:10px">Export CSV</a>
+    </nav>
+</header>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>
